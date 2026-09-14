@@ -21,10 +21,17 @@ import java.time.LocalDateTime;
 public class Inventory {
 
     /**
-     * Product associated with this inventory
+     * Unique identifier for the inventory
      */
     @Id
+    @Column(name = "product_id")
+    private Long productId;
+
+    /**
+     * Product associated with this inventory
+     */
     @OneToOne
+    @MapsId
     @JoinColumn(name = "product_id")
     private Product product;
 
