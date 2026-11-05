@@ -1,5 +1,6 @@
 package com.ec.ecommerceordermanagement.product.service;
 
+import com.ec.ecommerceordermanagement.common.exception.ResourceNotFoundException;
 import com.ec.ecommerceordermanagement.product.dto.CreateProductRequest;
 import com.ec.ecommerceordermanagement.product.dto.ProductResponse;
 import com.ec.ecommerceordermanagement.product.dto.UpdateProductRequest;
@@ -44,7 +45,12 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public ProductResponse getProductById(Long productId) {
-        return null;
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found with id: " + productId
+                ));
+        return productMapper.toResponse(product);
     }
 
     /**
