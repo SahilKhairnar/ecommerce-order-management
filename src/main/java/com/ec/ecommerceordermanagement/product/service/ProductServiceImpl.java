@@ -111,9 +111,24 @@ public class ProductServiceImpl implements ProductService {
      *
      * @param productId unique identifier of the product to deactivate
      * @return the deactivated product
+     * @throws ResourceNotFoundException if the product does not exist
      */
     @Override
     public ProductResponse deactivateProduct(Long productId) {
-        return null;
+
+        // Find the existing product
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product does not exist with id: " + productId
+                ));
+
+        // Set the product status to INACTIVE
+        product.setStatus(ProductStatus.INACTIVE);
+
+        // Save the updated product
+        Product deactivatedProduct = productRepository.save(product);
+
+        // Convert the updated entity into a response DTO
+        return productMapper.toResponse(deactivatedProduct);
     }
 }
