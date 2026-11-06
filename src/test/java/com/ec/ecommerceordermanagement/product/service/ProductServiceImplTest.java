@@ -393,4 +393,77 @@ public class ProductServiceImplTest {
 
         verifyNoInteractions(productRepository, productMapper);
     }
+
+    /**
+     * Tests that a product is successfully deactivated
+     */
+    @Test
+    void deactivateProduct_shouldDeactivateProduct_whenProductExists() {
+
+        Long productId = 1L;
+
+        Product existingProduct = new Product();
+        existingProduct.setId(productId);
+        existingProduct.setName("Mechanical Keyboard");
+        existingProduct.setDescription("Description");
+        existingProduct.setPrice(new BigDecimal("999.99"));
+        existingProduct.setCategory("Electronics");
+        existingProduct.setStatus(ProductStatus.ACTIVE);
+
+        ProductResponse expectedResponse = new ProductResponse(
+                productId,
+                "Mechanical Keyboard",
+                "Description",
+                new BigDecimal("999.99"),
+                "Electronics",
+                ProductStatus.INACTIVE,
+                null,
+                null
+        );
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(existingProduct));
+
+        when(productRepository.save(any(Product.class)))
+                .thenReturn(existingProduct);
+
+        when(productMapper.toResponse(existingProduct))
+                .thenReturn(expectedResponse);
+
+        // Act
+        ProductResponse actualResponse = productServiceImpl.deactivateProduct(productId);
+
+        // Assert
+        assertNotNull(actualResponse);
+        assertEquals(productId, actualResponse.getId());
+        assertEquals(ProductStatus.INACTIVE, actualResponse.getStatus());
+
+        verify(productRepository).findById(productId);
+        verify(productRepository).save(existingProduct);
+        verify(productMapper).toResponse(existingProduct);
+    }
+
+    /**
+     * Tests that ResourceNotFoundException is thrown when the product does not exist while deactivation
+     */
+    @Test
+    void deactivateProduct_shouldThrowException_whenProductDoesNotExist() {
+
+        Long productId = 1L;
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.empty());
+
+        // Act and Assert
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> productServiceImpl.deactivateProduct(productId)
+        );
+
+        assertEquals("Product does not exist with id: 1", exception.getMessage());
+
+        verify(productRepository).findById(productId);
+        verify(productRepository, never()).save(any(Product.class));
+        verifyNoInteractions(productMapper);
+    }
 }
