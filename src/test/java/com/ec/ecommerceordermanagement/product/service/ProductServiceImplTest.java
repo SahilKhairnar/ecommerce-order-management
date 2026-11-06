@@ -3,6 +3,7 @@ package com.ec.ecommerceordermanagement.product.service;
 import com.ec.ecommerceordermanagement.common.exception.ResourceNotFoundException;
 import com.ec.ecommerceordermanagement.product.dto.CreateProductRequest;
 import com.ec.ecommerceordermanagement.product.dto.ProductResponse;
+import com.ec.ecommerceordermanagement.product.dto.UpdateProductRequest;
 import com.ec.ecommerceordermanagement.product.entity.Product;
 import com.ec.ecommerceordermanagement.product.entity.ProductStatus;
 import com.ec.ecommerceordermanagement.product.mapper.ProductMapper;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Executable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -219,5 +221,176 @@ public class ProductServiceImplTest {
         // Verify
         verify(productRepository).findByStatus(ProductStatus.ACTIVE);
         verify(productMapper, never()).toResponse(any(Product.class));
+    }
+
+    /**
+     * Tests that all product fields are updated successfully
+     */
+    @Test
+    void updateProduct_shouldUpdateAllFields_whenProductExists() {
+
+        Long productId = 1L;
+
+        Product existingProduct = new Product();
+        existingProduct.setId(productId);
+        existingProduct.setName("Mechanical Keyboard");
+        existingProduct.setDescription("Old description");
+        existingProduct.setPrice(new BigDecimal("899.99"));
+        existingProduct.setCategory("Electronics");
+        existingProduct.setStatus(ProductStatus.ACTIVE);
+
+        UpdateProductRequest request = new UpdateProductRequest();
+        request.setName("Modern Mechanical Keyboard");
+        request.setDescription("New description");
+        request.setPrice(new BigDecimal("999.99"));
+        request.setCategory("Modern Electronics");
+
+        ProductResponse expectedResponse = new ProductResponse(
+                productId,
+                "Modern Mechanical Keyboard",
+                "New description",
+                new BigDecimal("999.99"),
+                "Modern Electronics",
+                ProductStatus.ACTIVE,
+                null,
+                null
+        );
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(existingProduct));
+
+        when(productRepository.save(any(Product.class)))
+                .thenReturn(existingProduct);
+
+        when(productMapper.toResponse(existingProduct))
+                .thenReturn(expectedResponse);
+
+        // Act
+        ProductResponse actualResponse = productServiceImpl.updateProduct(productId, request);
+
+        // Assert
+        assertNotNull(actualResponse);
+        assertEquals(productId, actualResponse.getId());
+        assertEquals("Modern Mechanical Keyboard", actualResponse.getName());
+        assertEquals("New description", actualResponse.getDescription());
+        assertEquals(new BigDecimal("999.99"), actualResponse.getPrice());
+        assertEquals("Modern Electronics", actualResponse.getCategory());
+        assertEquals(ProductStatus.ACTIVE, actualResponse.getStatus());
+
+        verify(productRepository).findById(productId);
+        verify(productRepository).save(existingProduct);
+        verify(productMapper).toResponse(existingProduct);
+    }
+
+    /**
+     * Tests that only the fields provided in the request are updated
+     * Other existing product fields should remain unchanged
+     */
+    @Test
+    void updateProduct_shouldUpdateOnlyProvidedFields() {
+
+        Long productId = 1L;
+
+        Product existingProduct = new Product();
+        existingProduct.setId(productId);
+        existingProduct.setName("Mechanical Keyboard");
+        existingProduct.setDescription("Old description");
+        existingProduct.setPrice(new BigDecimal("899.99"));
+        existingProduct.setCategory("Electronics");
+        existingProduct.setStatus(ProductStatus.ACTIVE);
+
+        UpdateProductRequest request = new UpdateProductRequest();
+        request.setName("Modern Mechanical Keyboard");
+        request.setPrice(new BigDecimal("999.99"));
+
+        ProductResponse expectedResponse = new ProductResponse(
+                productId,
+                "Modern Mechanical Keyboard",
+                "Old description",
+                new BigDecimal("999.99"),
+                "Electronics",
+                ProductStatus.ACTIVE,
+                null,
+                null
+        );
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(existingProduct));
+
+        when(productRepository.save(any(Product.class)))
+                .thenReturn(existingProduct);
+
+        when(productMapper.toResponse(existingProduct))
+                .thenReturn(expectedResponse);
+
+        // Act
+        ProductResponse actualResponse = productServiceImpl.updateProduct(productId, request);
+
+        // Assert
+        assertNotNull(actualResponse);
+
+        assertEquals("Modern Mechanical Keyboard", actualResponse.getName());
+        assertEquals(new BigDecimal("999.99"), actualResponse.getPrice());
+
+        // Verify that fields not provided in the request remain unchanged.
+        assertEquals("Old description", actualResponse.getDescription());
+        assertEquals("Electronics", actualResponse.getCategory());
+
+        verify(productRepository).findById(productId);
+        verify(productRepository).save(existingProduct);
+        verify(productMapper).toResponse(existingProduct);
+    }
+
+    /**
+     * Tests that ResourceNotFoundException is thrown when the product does not exist
+     */
+    @Test
+    void updateProduct_shouldThrowException_whenProductDoesNotExist() {
+
+        Long productId = 1L;
+
+        UpdateProductRequest request = new UpdateProductRequest();
+        request.setName("Mechanical Keyboard");
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.empty());
+
+        // Act and Assert
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> productServiceImpl.updateProduct(productId, request)
+        );
+
+        assertEquals("Product not found with id: 1", exception.getMessage());
+
+        // Verify
+        verify(productRepository).findById(productId);
+        verify(productRepository, never()).save(any(Product.class));
+        verifyNoInteractions(productMapper);
+    }
+
+    /**
+     * Tests that exception is thrown when no fields are provided for update
+     */
+    @Test
+    void updateProduct_shouldThrowException_whenRequestHasNoFields() {
+
+        Long productId = 1L;
+
+        UpdateProductRequest request = new UpdateProductRequest();
+
+        // Act and Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> productServiceImpl.updateProduct(productId, request)
+        );
+
+        assertEquals(
+                "At least one field must be provided for update",
+                exception.getMessage()
+        );
+
+        verifyNoInteractions(productRepository, productMapper);
     }
 }
