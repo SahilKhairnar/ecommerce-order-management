@@ -67,7 +67,7 @@ public class ProductController {
      * @param request fields to be updated
      * @return response containing the updated product
      */
-    @PutMapping("/{id")
+    @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody UpdateProductRequest request) {
