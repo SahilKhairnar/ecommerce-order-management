@@ -60,7 +60,11 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public List<ProductResponse> getAllProducts() {
-        return null;
+
+        return productRepository.findByStatus(ProductStatus.ACTIVE)
+                .stream()
+                .map(productMapper::toResponse)
+                .toList();
     }
 
     /**
