@@ -76,7 +76,34 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public ProductResponse updateProduct(Long productId, UpdateProductRequest request) {
-        return null;
+
+        // Reject request where no fields are provided for update
+        if (
+                request.getName() == null
+                &&request.getDescription() == null
+                &&request.getPrice() == null
+                &&request.getCategory() == null
+        ) {
+            throw new IllegalArgumentException("At least one field must be provided for update");
+        }
+
+        // Find the existing product
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found with id: " + productId
+                ));
+
+        // Update only the fields provided in the request
+        if (request.getName() != null) product.setName(request.getName());
+        if (request.getDescription() != null) product.setDescription(request.getDescription());
+        if (request.getPrice() != null) product.setPrice(request.getPrice());
+        if (request.getCategory() != null) product.setCategory(request.getCategory());
+
+        // Save the updated product
+        Product updatedProduct = productRepository.save(product);
+
+        // Convert the updated entity into a response DTO
+        return productMapper.toResponse(updatedProduct);
     }
 
     /**
