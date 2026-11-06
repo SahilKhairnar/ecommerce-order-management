@@ -14,10 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -148,6 +148,76 @@ public class ProductServiceImplTest {
 
         // Verify
         verify(productRepository).findById(productId);
+        verify(productMapper, never()).toResponse(any(Product.class));
+    }
+
+    /**
+     * Tests that all active products are successfully retrieved
+     */
+    @Test
+    void getAllProducts_shouldReturnAllActiveProducts() {
+
+        Product product1 = new Product();
+        product1.setId(1L);
+        product1.setName("Mechanical Keyboard");
+
+        Product product2 = new Product();
+        product2.setId(2L);
+        product2.setName("Wireless Mouse");
+
+        List<Product> products = List.of(product1,product2);
+
+        ProductResponse response1 = new ProductResponse();
+        response1.setId(1L);
+        response1.setName("Mechanical Keyboard");
+        response1.setStatus(ProductStatus.ACTIVE);
+
+        ProductResponse response2 = new ProductResponse();
+        response2.setId(2L);
+        response2.setName("Wireless Mouse");
+        response2.setStatus(ProductStatus.ACTIVE);
+
+        when(productRepository.findByStatus(ProductStatus.ACTIVE))
+                .thenReturn(products);
+        when(productMapper.toResponse(product1)).thenReturn(response1);
+        when(productMapper.toResponse(product2)).thenReturn(response2);
+
+        // Act
+        List<ProductResponse> actualResponse = productServiceImpl.getAllProducts();
+
+        // Assert
+        assertEquals(2, actualResponse.size());
+
+        assertEquals(1L, actualResponse.get(0).getId());
+        assertEquals("Mechanical Keyboard", actualResponse.get(0).getName());
+        assertEquals(ProductStatus.ACTIVE, actualResponse.get(0).getStatus());
+
+        assertEquals(2L, actualResponse.get(1).getId());
+        assertEquals("Wireless Mouse", actualResponse.get(1).getName());
+        assertEquals(ProductStatus.ACTIVE, actualResponse.get(1).getStatus());
+
+        // Verify
+        verify(productRepository).findByStatus(ProductStatus.ACTIVE);
+        verify(productMapper, times(2)).toResponse(any(Product.class));
+    }
+
+    /**
+     * Tests that an empty list is returned when no active products exist
+     */
+    @Test
+    void getAllProducts_shouldReturnEmptyList_whenNoActiveProductExist() {
+
+        when(productRepository.findByStatus(ProductStatus.ACTIVE)).thenReturn(List.of());
+
+        // Act
+        List<ProductResponse> actualResponse = productServiceImpl.getAllProducts();
+
+        // Assert
+        assertNotNull(actualResponse);
+        assertTrue(actualResponse.isEmpty());
+
+        // Verify
+        verify(productRepository).findByStatus(ProductStatus.ACTIVE);
         verify(productMapper, never()).toResponse(any(Product.class));
     }
 }
