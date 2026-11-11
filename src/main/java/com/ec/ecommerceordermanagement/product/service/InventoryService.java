@@ -1,6 +1,7 @@
 package com.ec.ecommerceordermanagement.product.service;
 
 import com.ec.ecommerceordermanagement.product.dto.InventoryResponse;
+import com.ec.ecommerceordermanagement.product.entity.Product;
 
 /**
  * Defines business operations related to product inventory
@@ -23,4 +24,11 @@ public interface InventoryService {
      * @return true if the sufficient stock os available, otherwise false
      */
     boolean hasSufficientStock(Long productId, Integer quantity);
+
+    /**
+     * Initializes inventory for a newly created product.
+     *
+     * @param product product for which inventory should be initialized
+     */
+    void initializeInventory(Product product);
 }

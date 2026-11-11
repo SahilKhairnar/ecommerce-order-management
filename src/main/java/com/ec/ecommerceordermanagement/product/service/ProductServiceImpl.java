@@ -10,6 +10,7 @@ import com.ec.ecommerceordermanagement.product.mapper.ProductMapper;
 import com.ec.ecommerceordermanagement.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final InventoryService inventoryService;
 
     /**
      * Creates a new product
@@ -30,10 +32,15 @@ public class ProductServiceImpl implements ProductService {
      * @return the created product
      */
     @Override
+    @Transactional
     public ProductResponse createProduct(CreateProductRequest request) {
         Product product = productMapper.toEntity(request);
         product.setStatus(ProductStatus.ACTIVE);
         Product newProduct = productRepository.save(product);
+
+        // Initialize Inventory for the product
+        inventoryService.initializeInventory(newProduct);
+
         return productMapper.toResponse(newProduct);
     }
 

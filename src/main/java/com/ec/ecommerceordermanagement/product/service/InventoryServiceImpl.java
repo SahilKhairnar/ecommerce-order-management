@@ -3,6 +3,7 @@ package com.ec.ecommerceordermanagement.product.service;
 import com.ec.ecommerceordermanagement.common.exception.ResourceNotFoundException;
 import com.ec.ecommerceordermanagement.product.dto.InventoryResponse;
 import com.ec.ecommerceordermanagement.product.entity.Inventory;
+import com.ec.ecommerceordermanagement.product.entity.Product;
 import com.ec.ecommerceordermanagement.product.mapper.InventoryMapper;
 import com.ec.ecommerceordermanagement.product.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +53,22 @@ public class InventoryServiceImpl implements InventoryService{
                         "Inventory not found for the product id: " + productId
                 ));
         return inventory.getAvailableQuantity() >= quantity;
+    }
+
+    /**
+     * Initializes inventory for a newly created product.
+     *
+     * @param product product for which inventory should be initialized
+     */
+    @Override
+    public void initializeInventory(Product product) {
+
+        Inventory inventory = Inventory.builder()
+                .product(product)
+                .availableQuantity(0)
+                .reservedQuantity(0)
+                .build();
+
+        inventoryRepository.save(inventory);
     }
 }

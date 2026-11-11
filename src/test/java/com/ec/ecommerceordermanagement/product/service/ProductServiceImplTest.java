@@ -32,6 +32,9 @@ public class ProductServiceImplTest {
     @Mock
     private ProductMapper productMapper;
 
+    @Mock
+    private InventoryService inventoryService;
+
     @InjectMocks
     private ProductServiceImpl productServiceImpl;
 
@@ -93,6 +96,7 @@ public class ProductServiceImplTest {
 
         verify(productMapper).toEntity(request);
         verify(productRepository).save(product);
+        verify(inventoryService).initializeInventory(savedProduct);
         verify(productMapper).toResponse(savedProduct);
     }
 
