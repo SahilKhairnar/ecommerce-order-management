@@ -2,12 +2,14 @@ package com.ec.ecommerceordermanagement.product.service;
 
 import com.ec.ecommerceordermanagement.common.exception.ResourceNotFoundException;
 import com.ec.ecommerceordermanagement.product.dto.InventoryResponse;
+import com.ec.ecommerceordermanagement.product.dto.UpdateInventoryRequest;
 import com.ec.ecommerceordermanagement.product.entity.Inventory;
 import com.ec.ecommerceordermanagement.product.entity.Product;
 import com.ec.ecommerceordermanagement.product.mapper.InventoryMapper;
 import com.ec.ecommerceordermanagement.product.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implements business operations related to the product inventory
@@ -70,5 +72,28 @@ public class InventoryServiceImpl implements InventoryService{
                 .build();
 
         inventoryRepository.save(inventory);
+    }
+
+    /**
+     * Updates the available quantity for a product
+     *
+     * @param productId unique identifier of the product
+     * @param request request containing the new available quantity
+     * @return updated inventory details
+     */
+    @Transactional
+    @Override
+    public InventoryResponse updateInventory(Long productId, UpdateInventoryRequest request) {
+
+        Inventory inventory = inventoryRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Inventory not found with the product id: " + productId
+                ));
+
+        inventory.setAvailableQuantity(request.getAvailableQuantity());
+
+        Inventory updatedInventory = inventoryRepository.save(inventory);
+
+        return inventoryMapper.toResponse(updatedInventory);
     }
 }

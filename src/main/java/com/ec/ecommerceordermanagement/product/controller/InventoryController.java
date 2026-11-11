@@ -1,13 +1,12 @@
 package com.ec.ecommerceordermanagement.product.controller;
 
 import com.ec.ecommerceordermanagement.product.dto.InventoryResponse;
+import com.ec.ecommerceordermanagement.product.dto.UpdateInventoryRequest;
 import com.ec.ecommerceordermanagement.product.service.InventoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * REST controller for managing product inventory
@@ -31,6 +30,23 @@ public class InventoryController {
 
         return ResponseEntity.ok(
                 inventoryService.getInventoryByProductId(productId)
+        );
+    }
+
+    /**
+     * Updates the available stock quantity for a product.
+     *
+     * @param productId unique identifier of the product
+     * @param request request containing the new available quantity
+     * @return updated inventory details with HTTP 200 status
+     */
+    @PutMapping("/{productId}/inventory")
+    public ResponseEntity<InventoryResponse> updateInventory(
+            @PathVariable Long productId,
+            @Valid @RequestBody UpdateInventoryRequest request) {
+
+        return ResponseEntity.ok(
+                inventoryService.updateInventory(productId, request)
         );
     }
 }

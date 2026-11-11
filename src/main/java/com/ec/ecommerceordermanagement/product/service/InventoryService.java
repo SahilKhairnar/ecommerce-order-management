@@ -1,6 +1,7 @@
 package com.ec.ecommerceordermanagement.product.service;
 
 import com.ec.ecommerceordermanagement.product.dto.InventoryResponse;
+import com.ec.ecommerceordermanagement.product.dto.UpdateInventoryRequest;
 import com.ec.ecommerceordermanagement.product.entity.Product;
 
 /**
@@ -31,4 +32,13 @@ public interface InventoryService {
      * @param product product for which inventory should be initialized
      */
     void initializeInventory(Product product);
+
+    /**
+     * Updates the available quantity for a product
+     *
+     * @param productId unique identifier of the product
+     * @param request request containing the new available quantity
+     * @return updated inventory details
+     */
+    InventoryResponse updateInventory(Long productId, UpdateInventoryRequest request);
 }
