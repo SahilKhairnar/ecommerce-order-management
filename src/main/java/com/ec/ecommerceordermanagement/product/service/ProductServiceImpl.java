@@ -138,4 +138,25 @@ public class ProductServiceImpl implements ProductService {
         // Convert the updated entity into a response DTO
         return productMapper.toResponse(deactivatedProduct);
     }
+
+    /**
+     * Retrieves a product entity by its unique identifier
+     *
+     * @param productId the unique identifier of the product
+     * @return the requested product entity
+     */
+    @Override
+    public Product getProductEntityById(Long productId) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found with id:" + productId
+                ));
+
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new IllegalArgumentException("Product is not available");
+        }
+
+        return product;
+    }
 }

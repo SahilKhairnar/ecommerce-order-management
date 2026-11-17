@@ -3,6 +3,7 @@ package com.ec.ecommerceordermanagement.product.service;
 import com.ec.ecommerceordermanagement.product.dto.CreateProductRequest;
 import com.ec.ecommerceordermanagement.product.dto.ProductResponse;
 import com.ec.ecommerceordermanagement.product.dto.UpdateProductRequest;
+import com.ec.ecommerceordermanagement.product.entity.Product;
 
 import java.util.List;
 
@@ -50,4 +51,12 @@ public interface ProductService {
      * @return the deactivated product
      */
     ProductResponse deactivateProduct(Long productId);
+
+    /**
+     * Retrieves a product entity by its unique identifier
+     *
+     * @param productId the unique identifier of the product
+     * @return the requested product entity
+     */
+    Product getProductEntityById(Long productId);
 }
