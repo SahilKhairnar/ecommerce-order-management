@@ -1,5 +1,6 @@
 package com.ec.ecommerceordermanagement.user.service;
 
+import com.ec.ecommerceordermanagement.cart.service.CartService;
 import com.ec.ecommerceordermanagement.common.exception.ResourceNotFoundException;
 import com.ec.ecommerceordermanagement.user.dto.CreateUserRequest;
 import com.ec.ecommerceordermanagement.user.dto.UserResponse;
@@ -11,6 +12,7 @@ import com.ec.ecommerceordermanagement.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Provides business logic for user related operations
@@ -22,6 +24,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CartService cartService;
 
     /**
      * Registers a new user
@@ -29,6 +32,7 @@ public class UserServiceImpl implements UserService {
      * @param request request containing user details
      * @return the registered user
      */
+    @Transactional
     @Override
     public UserResponse registerUser(CreateUserRequest request) {
 
@@ -48,6 +52,9 @@ public class UserServiceImpl implements UserService {
         user.setStatus(UserStatus.ACTIVE);
 
         User savedUser = userRepository.save(user);
+
+        // Create a cart for the user
+        cartService.createCart(savedUser);
 
         return userMapper.toResponse(savedUser);
     }
