@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,8 +44,9 @@ public class Cart {
     /**
      * Items currently contained in this cart
      */
+    @Builder.Default
     @OneToMany(mappedBy = "cart")
-    private List<CartItem> items;
+    private List<CartItem> items = new ArrayList<>();
 
     /**
      * Timestamp when the cart was created
